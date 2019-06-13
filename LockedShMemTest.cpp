@@ -7,8 +7,7 @@
 
 #include "LockedShMemTest.h"
 
-int createShMem(int id, ShMem** ptr)
-{
+int createShMem(int id, ShMem** ptr) {
     char shmem_name[32];
     ::sprintf(shmem_name, BASE_SHMNAME, id);
 
@@ -16,20 +15,51 @@ int createShMem(int id, ShMem** ptr)
     ::shm_unlink(shmem_name);
     int fd = ::shm_open(shmem_name, O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK, FILE_MODE);
 
-    if (fd < 0)
-    {
-        printf("Error: cant execute shm_open for %s. Return code: %d\n", shmem_name, fd);
+    if (fd < 0) {
+        printf("Error: shm_open failed for %s. Return code: %d\n", shmem_name, fd);
         return RC_SHMEM_OPEN_ERR;
     }
 
-    if (ptr)
-    {
-        *ptr = (ShMem*)::mmap(NULL, sizeof(ShMem), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    } else
-    {
+    if (ptr) {
+        *ptr = (ShMem *) ::mmap(NULL, sizeof(ShMem), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    } else {
         printf("Error: mmap NULL pointer for %s.\n", shmem_name);
-        return RC_BAD_POINTER_ERR
+        return RC_BAD_POINTER_ERR;
     }
 
-    return RC_OK;
+    if (*ptr == MAP_FAILED) {
+        printf("ERROR: mmap faild %s", shmem_name);
+        return RC_MPA_DAILD_ERR;
+    }
+
+    if (::ftruncate(fd, sizeof(ShMem)) == -1) {
+        printf("ERROR: mmap failed %s", shmem_name);
+        return RC_FTRUNCATE_ERR;
+    }
+
+    if (::close(fd) == -1) {
+        printf("ERROR: close by file descriptor of shared memory failed %s, fd: %d", shmem_name, fd);
+        return RC_CLOSE_FD_ERR;
+    }
+    // semaphore initialization
+    if (::sem_init(&(*ptr)->data_mutex, 1, 1) == -1)
+    {
+        printf("ERROR: failed %s", shmem_name);
+        return RC_SEM_INIT_ERR;
+    }
+
+    // block shared memory
+    if (mlock(ptr, sizeof(ShMem)) == -1)
+    {
+        printf("! ! mlock error for %s: %d (%s)\n", shmem_name, errno, strerror(errno));
+        return RC_SHMEM_MLCOK_ERR;
+    }
+
+    // data initialization
+
+    (*ptr)->ui_data = 0;
+    (*ptr)->fl_data = 0.0;
+    ::sprintf((*ptr)->ch_data, "Init 1");
+
+    return RC_CREATE_SHMEM_OK;
 }

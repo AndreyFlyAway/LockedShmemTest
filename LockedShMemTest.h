@@ -25,9 +25,14 @@
 #define	FILE_MODE	(S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
 // return codes
-#define RC_OK                           0
+#define RC_CREATE_SHMEM_OK              0
 #define RC_SHMEM_OPEN_ERR              -1
 #define RC_BAD_POINTER_ERR             -2
+#define RC_MPA_DAILD_ERR               -3
+#define RC_FTRUNCATE_ERR               -4
+#define RC_CLOSE_FD_ERR                -5
+#define RC_SEM_INIT_ERR                -6
+#define RC_SHMEM_MLCOK_ERR             -7
 
 // structs
 struct ShMem {
