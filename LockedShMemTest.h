@@ -1,6 +1,9 @@
-//
-// Created by user on 6/13/19.
-//
+/*
+ * File:   LockedShMemTest.h
+ * Author: Yanikeev-AS
+ *
+ * Created on August 6, 2016, 11:02 AM
+ */
 
 #ifndef LOCKEDSHMEMTEST_LOCKEDSHMEMTEST_H
 #define LOCKEDSHMEMTEST_LOCKEDSHMEMTEST_H
@@ -20,6 +23,11 @@
 // constants
 #define BASE_SHMNAME            "SHMEM_%d"
 #define	FILE_MODE	(S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+
+// return codes
+#define RC_OK                           0
+#define RC_SHMEM_OPEN_ERR              -1
+#define RC_BAD_POINTER_ERR             -2
 
 // structs
 struct ShMem {

@@ -1,6 +1,9 @@
-//
-// Created by user on 6/13/19.
-//
+/*
+ * File:   LockedShMemTest.h
+ * Author: Yanikeev-AS
+ *
+ * Created on August 6, 2016, 11:02 AM
+ */
 
 #include "LockedShMemTest.h"
 
@@ -15,8 +18,18 @@ int createShMem(int id, ShMem** ptr)
 
     if (fd < 0)
     {
-        printf("Error: cant execute shm_open for %s: %d (%s)\n", shmem_name, fd);
+        printf("Error: cant execute shm_open for %s. Return code: %d\n", shmem_name, fd);
+        return RC_SHMEM_OPEN_ERR;
     }
 
+    if (ptr)
+    {
+        *ptr = (ShMem*)::mmap(NULL, sizeof(ShMem), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    } else
+    {
+        printf("Error: mmap NULL pointer for %s.\n", shmem_name);
+        return RC_BAD_POINTER_ERR
+    }
 
+    return RC_OK;
 }
