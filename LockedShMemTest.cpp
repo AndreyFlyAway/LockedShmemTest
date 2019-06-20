@@ -7,17 +7,17 @@
 
 #include "LockedShMemTest.h"
 
-int createShMem(int id, ShMem** ptr)
+int createShMem(int id, ShMem** ptr, int locked, char* shmem_name_fmt)
 {
     char shmem_name[32];
-    ::sprintf(shmem_name, BASE_SHMNAME, id);
+    ::sprintf(shmem_name, shmem_name_fmt, id);
 
     // creating shared memory
     ::shm_unlink(shmem_name);
     int fd = ::shm_open(shmem_name, O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK, FILE_MODE);
 
     if (fd < 0) {
-        printf("Error: shm_open failed for %s. Return code: %d\n", shmem_name, fd);
+        printf("Error: shm_open eeprog /dev/i2c-4 0x57 -16 -f -r 0x0 for %s. Return code: %d\n", shmem_name, fd);
         return RC_SHMEM_OPEN_ERR;
     }
 
@@ -50,11 +50,12 @@ int createShMem(int id, ShMem** ptr)
     }
 
     // block shared memory
-    if (mlock(ptr, sizeof(ShMem)) == -1)
-    {
-        printf("! ! mlock error for %s: %d (%s)\n", shmem_name, errno, strerror(errno));
-        return RC_SHMEM_MLCOK_ERR;
-    }
+    if (locked == 1)
+        if (mlock(ptr, sizeof(ShMem)) == -1)
+        {
+            printf("! ! mlock error for %s: %d (%s)\n", shmem_name, errno, strerror(errno));
+            return RC_SHMEM_MLCOK_ERR;
+        }
 
     // data initialization
 
@@ -65,10 +66,10 @@ int createShMem(int id, ShMem** ptr)
     return RC_SHMEM_OK;
 }
 
-int getShMem(int id, ShMem** ptr)
+int getShMem(int id, ShMem** ptr, char* shmem_name_fmt)
 {
     char shmem_name[32];
-    ::sprintf(shmem_name, BASE_SHMNAME, id);
+    ::sprintf(shmem_name, shmem_name_fmt, id);
 
     int fd = ::shm_open(shmem_name, O_RDWR, FILE_MODE);
     if (fd < 0)
@@ -111,10 +112,10 @@ int freeShMem(ShMem* ptr)
     return RC_SHMEM_OK;
 }
 
-int releaseShMem(int id)
+int releaseShMem(int id, char* shmem_name_fmt)
 {
     char shmem_name[32];
-    ::sprintf(shmem_name, BASE_SHMNAME, id);
+    ::sprintf(shmem_name, shmem_name_fmt, id);
 
     return ::shm_unlink(shmem_name);
 }
@@ -150,4 +151,12 @@ void* read_thread(void * unused)
     }
 
     return NULL;
+}
+
+/* testing consumed time for work with locked shared memory and non locked*/
+void shared_mem_test()
+{
+    /* create 2 sets of shared memory*/
+    /* locked */
+    printf("Read thread");
 }
