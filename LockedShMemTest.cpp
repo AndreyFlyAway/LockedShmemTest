@@ -120,24 +120,30 @@ int releaseShMem(int id, char* shmem_name_fmt)
     return ::shm_unlink(shmem_name);
 }
 
-void* write_thread(void * unused)
+void* write_thread(void * params)
 {
-    ShMem* ptr = nullptr;
-    createShMem(1, &ptr);
+    int get_mem_res {};
+    tread_args * args = (tread_args *)params;
 
-    uint sleep_time {500000};
-
-    for (int i = 0; i < EXPEREMETN_COUNTER; i++)
+    for (int i = 0; i < args->shamem_num; i++)
     {
-//        printf("Write thread %d\n", i);
-        sprintf(ptr->ch_data, "Init data %d", i);
-        usleep(sleep_time);
+        ShMem* ptr = nullptr;
+        get_mem_res = getShMem(i, &(ptr), args->chmem_fmt);
+        if (get_mem_res != RC_SHMEM_OK)
+        {
+            return (void*)(get_mem_res);
+        } else
+        {
+            sprintf(ptr->ch_data, "test_%d", i);
+            ptr->ui_data = (uint)i;
+            ptr->fl_data = (float)i;
+        }
     }
 
     return NULL;
 }
 
-void* read_thread(void * unused)
+void* read_thread(void * params)
 {
     uint sleep_time {520000};
 
@@ -157,6 +163,17 @@ void* read_thread(void * unused)
 void shared_mem_test()
 {
     /* create 2 sets of shared memory*/
+    /* not locked */
+    for(auto i=1; i<=SHARED_MEM_OBJ_NUM; i++)
+    {
+        ShMem* shmem_ptr = nullptr;
+        createShMem(i, &shmem_ptr, 0, (char *)(BASE_SHMNAME_FMT)); // give optional arguments for clarity
+    }
     /* locked */
-    printf("Read thread");
+    for(auto i=1; i<=SHARED_MEM_OBJ_NUM; i++)
+    {
+        ShMem* shmem_ptr = nullptr;
+        createShMem(i, &shmem_ptr, 1, (char *)(LOCKED_SHMNAME_FMT));
+    }
+
 }
