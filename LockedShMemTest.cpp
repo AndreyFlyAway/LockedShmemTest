@@ -11,7 +11,7 @@ int createShMem(int id, ShMem** ptr, int locked, char* shmem_name_fmt)
 {
     char shmem_name[32];
     ::sprintf(shmem_name, shmem_name_fmt, id);
-
+//    std::cout << "Creating shmem with name " << shmem_name << std::endl;
     // creating shared memory
     ::shm_unlink(shmem_name);
     int fd = ::shm_open(shmem_name, O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK, FILE_MODE);
@@ -70,6 +70,7 @@ int getShMem(int id, ShMem** ptr, char* shmem_name_fmt)
 {
     char shmem_name[32];
     ::sprintf(shmem_name, shmem_name_fmt, id);
+//    std::cout << "Writting shmem with name " << shmem_name << std::endl;
 
     int fd = ::shm_open(shmem_name, O_RDWR, FILE_MODE);
     if (fd < 0)
@@ -162,19 +163,43 @@ void* read_thread(void * params)
 /* testing consumed time for work with locked shared memory and non locked*/
 void shared_mem_test()
 {
+    uint64_t ts_s, ts_f, worktime_not_locked_ns, worktime_locked_ns;
     /* create 2 sets of shared memory*/
     /* not locked */
-    for(auto i=1; i<=SHARED_MEM_OBJ_NUM; i++)
+    for(auto i=0; i<=SHARED_MEM_OBJ_NUM; i++)
     {
         ShMem* shmem_ptr = nullptr;
         createShMem(i, &shmem_ptr, 0, (char *)(BASE_SHMNAME_FMT)); // give optional arguments for clarity
     }
     /* locked */
-    for(auto i=1; i<=SHARED_MEM_OBJ_NUM; i++)
+    for(auto i=0; i<=SHARED_MEM_OBJ_NUM; i++)
     {
         ShMem* shmem_ptr = nullptr;
         createShMem(i, &shmem_ptr, 1, (char *)(LOCKED_SHMNAME_FMT));
     }
+
+    tread_args args_not_locked_shmem;
+    tread_args args_locked_shmem;
+
+    args_not_locked_shmem.chmem_fmt = (char *)(BASE_SHMNAME_FMT);
+    args_locked_shmem.chmem_fmt = (char *)(LOCKED_SHMNAME_FMT);
+
+    ts_s = get_timestamp_ns();
+    write_thread((void *)(&args_not_locked_shmem));
+    ts_f = get_timestamp_ns();
+
+    worktime_not_locked_ns = ts_f - ts_s;
+
+    ts_s = get_timestamp_ns();
+    write_thread((void *)(&args_locked_shmem));
+    ts_f = get_timestamp_ns();
+
+    worktime_locked_ns = ts_f - ts_s;
+
+    std::cout << "Work with not locked shmem: " << worktime_not_locked_ns << std::endl;
+    std::cout << "Work with locked shmem: " << worktime_locked_ns << std::endl;
+
+    // TODO: make methods, that free shmem in the end
 
 }
 

@@ -31,7 +31,7 @@
 #define LOCKED_SHMNAME_FMT             "LOCKED_SHMEM_%d"
 #define	FILE_MODE	                   (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 #define NMESG                          64
-#define SHARED_MEM_OBJ_NUM             128
+#define SHARED_MEM_OBJ_NUM             256
 
 // return codes
 #define RC_SHMEM_OK                     0
