@@ -21,6 +21,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
+#include <inttypes.h>
+#include <iostream>
 
 // constants
 #define	EXPEREMETN_COUNTER	           10
@@ -42,19 +45,19 @@
 
 /* shared memory data struct */
 struct ShMem {
-    sem_t               data_mutex;     // Posix semaphore, protects access to data
-    uint64_t            ui_data;
-    float               fl_data;
-    char                ch_data[32];
+    sem_t       data_mutex;     // Posix semaphore, protects access to data
+    uint64_t    ui_data;
+    float       fl_data;
+    char        ch_data[32];
 };
 
 /* queue struct (nahuya mne eto?) */
 struct QueueData {
-    sem_t	mutex;
+    sem_t	    mutex;
     int32_t     nstored;            // number of busy position  in queue
     int32_t     nget;               // index of element for getting operation
     int32_t     nput;               // index of element for putting operation
-    ShMem	msgdata[NMESG];     // the data
+    ShMem	    msgdata[NMESG];     // the data
 };
 
 /* thread's parameters struct */
@@ -71,5 +74,6 @@ int releaseShMem(int id, char* shmem_name_fmt=(char *)(BASE_SHMNAME_FMT));
 void* write_thread(void * params);
 void* read_thread(void * params);
 void shared_mem_test();
+uint64_t get_timestamp_ns();
 
 #endif //LOCKEDSHMEMTEST_LOCKEDSHMEMTEST_H

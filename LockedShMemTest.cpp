@@ -177,3 +177,14 @@ void shared_mem_test()
     }
 
 }
+
+/* get timestamp */
+uint64_t get_timestamp_ns()
+{
+    uint64_t ts;
+    timespec spec;
+    clock_gettime(CLOCK_MONOTONIC, &spec);
+    ts = (uint64_t)(spec.tv_sec) * 1000000000 + (uint64_t)(spec.tv_nsec);
+
+    return ts;
+}
