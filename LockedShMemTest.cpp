@@ -163,7 +163,9 @@ void* read_thread(void * params)
 /* testing consumed time for work with locked shared memory and non locked*/
 void shared_mem_test()
 {
-    uint64_t ts_s, ts_f, worktime_not_locked_ns, worktime_locked_ns;
+    uint64_t ts_s, ts_f;
+    uint64_t worktime_not_locked_ns[TEST_NUM];
+    uint64_t worktime_locked_ns[TEST_NUM];
     /* create 2 sets of shared memory*/
     /* not locked */
     for(auto i=0; i<=SHARED_MEM_OBJ_NUM; i++)
@@ -184,23 +186,45 @@ void shared_mem_test()
     args_not_locked_shmem.chmem_fmt = (char *)(BASE_SHMNAME_FMT);
     args_locked_shmem.chmem_fmt = (char *)(LOCKED_SHMNAME_FMT);
 
-    ts_s = get_timestamp_ns();
-    write_thread((void *)(&args_not_locked_shmem));
-    ts_f = get_timestamp_ns();
+    for (int i = 0 ; i < TEST_NUM ; i++) {
+        ts_s = get_timestamp_ns();
+        write_thread((void *) (&args_not_locked_shmem));
+        ts_f = get_timestamp_ns();
 
-    worktime_not_locked_ns = ts_f - ts_s;
+        worktime_not_locked_ns[i] = ts_f - ts_s;
 
-    ts_s = get_timestamp_ns();
-    write_thread((void *)(&args_locked_shmem));
-    ts_f = get_timestamp_ns();
+        ts_s = get_timestamp_ns();
+        //    for (int i = 0 ; i < TEST_NUM ; i++)
+        write_thread((void *) (&args_locked_shmem));
+        ts_f = get_timestamp_ns();
 
-    worktime_locked_ns = ts_f - ts_s;
+        worktime_locked_ns[i] = ts_f - ts_s;
 
-    std::cout << "Work with not locked shmem: " << worktime_not_locked_ns << std::endl;
-    std::cout << "Work with locked shmem: " << worktime_locked_ns << std::endl;
-
+//        std::cout << "Work with not locked shmem: " << worktime_not_locked_ns << std::endl;
+//        std::cout << "Work with     locked shmem: " << worktime_locked_ns << std::endl;
+    }
+    // test result for exel table
+    std::cout << "Not locked shmem: "<< std::endl;
+    for (int i = 0 ; i < TEST_NUM ; i++)
+        std::cout << worktime_not_locked_ns[i] << std::endl;
+    std::cout << "Locked shmem: "<< std::endl;
+    for (int i = 0 ; i < TEST_NUM ; i++)
+        std::cout << worktime_locked_ns[i] << std::endl;
     // TODO: make methods, that free shmem in the end
-
+    // free shmem
+    ShMem* ptr = nullptr;
+    for (int i = 0; i < SHARED_MEM_OBJ_NUM; i++)
+    {
+        ptr = nullptr;
+        getShMem(i, &(ptr), (char *)(BASE_SHMNAME_FMT));
+        freeShMem(ptr);
+    }
+    for (int i = 0; i < SHARED_MEM_OBJ_NUM; i++)
+    {
+        ptr = nullptr;
+        getShMem(i, &(ptr), (char *)(LOCKED_SHMNAME_FMT));
+        freeShMem(ptr);
+    }
 }
 
 /* get timestamp */
