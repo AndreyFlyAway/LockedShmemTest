@@ -129,7 +129,7 @@ void* write_thread(void * params)
     for (int i = 0; i < args->shamem_num; i++)
     {
         ShMem* ptr = nullptr;
-        get_mem_res = getShMem(i, &(ptr), args->chmem_fmt);
+        get_mem_res = getShMem(i, &(ptr), args->shmem_fmt);
         if (get_mem_res != RC_SHMEM_OK)
         {
             return (void*)(get_mem_res);
@@ -168,13 +168,13 @@ void shared_mem_test()
     uint64_t worktime_locked_ns[TEST_NUM];
     /* create 2 sets of shared memory*/
     /* not locked */
-    for(auto i=0; i<=SHARED_MEM_OBJ_NUM; i++)
+    for(int i = 0; i<=SHARED_MEM_OBJ_NUM; i++)
     {
         ShMem* shmem_ptr = nullptr;
         createShMem(i, &shmem_ptr, 0, (char *)(BASE_SHMNAME_FMT)); // give optional arguments for clarity
     }
     /* locked */
-    for(auto i=0; i<=SHARED_MEM_OBJ_NUM; i++)
+    for(int i=0; i<=SHARED_MEM_OBJ_NUM; i++)
     {
         ShMem* shmem_ptr = nullptr;
         createShMem(i, &shmem_ptr, 1, (char *)(LOCKED_SHMNAME_FMT));
@@ -183,8 +183,8 @@ void shared_mem_test()
     tread_args args_not_locked_shmem;
     tread_args args_locked_shmem;
 
-    args_not_locked_shmem.chmem_fmt = (char *)(BASE_SHMNAME_FMT);
-    args_locked_shmem.chmem_fmt = (char *)(LOCKED_SHMNAME_FMT);
+    args_not_locked_shmem.shmem_fmt = (char *)(BASE_SHMNAME_FMT);
+    args_locked_shmem.shmem_fmt = (char *)(LOCKED_SHMNAME_FMT);
 
     for (int i = 0 ; i < TEST_NUM ; i++) {
         ts_s = get_timestamp_ns();
@@ -210,7 +210,6 @@ void shared_mem_test()
     std::cout << "Locked shmem: "<< std::endl;
     for (int i = 0 ; i < TEST_NUM ; i++)
         std::cout << worktime_locked_ns[i] << std::endl;
-    // TODO: make methods, that free shmem in the end
     // free shmem
     ShMem* ptr = nullptr;
     for (int i = 0; i < SHARED_MEM_OBJ_NUM; i++)

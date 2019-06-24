@@ -63,7 +63,7 @@ struct QueueData {
 
 /* thread's parameters struct */
 struct tread_args{
-    char * chmem_fmt = (char *)(BASE_SHMNAME_FMT);
+    char * shmem_fmt = (char *)(BASE_SHMNAME_FMT);
     int shamem_num {SHARED_MEM_OBJ_NUM};
 };
 
